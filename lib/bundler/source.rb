@@ -553,10 +553,9 @@ module Bundler
       end
 
       def load_spec_files
-        return super if cache_path.exist?
-        raise PathError
-      rescue PathError
-        raise PathError, "#{to_s} is not checked out. Please run `bundle install`"
+        super
+      rescue PathError, GitError
+        raise GitError, "#{to_s} is not checked out. Please run `bundle install`"
       end
 
     private
@@ -626,7 +625,7 @@ module Bundler
           git %|clone --no-checkout "#{cache_path}" "#{path}"|
         end
         Dir.chdir(path) do
-          git "fetch --force --quiet"
+          git "fetch --force --quiet '#{cache_path}'"
           git "reset --hard #{revision}"
 
           if @submodules

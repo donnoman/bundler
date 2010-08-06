@@ -235,6 +235,31 @@ describe "Bundler.setup" do
 
       err.should_not include "This is not the git you are looking for"
     end
+
+    it "works even when the cache directory has been deleted" do
+      bundle "install vendor"
+      FileUtils.rm_rf vendored_gems('cache')
+      should_be_installed "rack 1.0.0"
+    end
+
+    it "does not randomly change the path when specifying --path and the bundle directory becomes read only" do
+      begin
+        bundle "install vendor"
+
+        Dir["**/*"].each do |f|
+          File.directory?(f) ?
+            File.chmod(0555, f) :
+            File.chmod(0444, f)
+        end
+        should_be_installed "rack 1.0.0"
+      ensure
+        Dir["**/*"].each do |f|
+          File.directory?(f) ?
+            File.chmod(0755, f) :
+            File.chmod(0644, f)
+        end
+      end
+    end
   end
 
   describe "when excluding groups" do

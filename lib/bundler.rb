@@ -11,6 +11,7 @@ module Bundler
   autoload :Dependency,          'bundler/dependency'
   autoload :Dsl,                 'bundler/dsl'
   autoload :Environment,         'bundler/environment'
+  autoload :GemHelper,           'bundler/gem_helper'
   autoload :Graph,               'bundler/graph'
   autoload :Index,               'bundler/index'
   autoload :Installer,           'bundler/installer'
@@ -157,7 +158,7 @@ module Bundler
     end
 
     def tmp
-      user_bundle_path.join("tmp")
+      user_bundle_path.join("tmp", Process.pid.to_s)
     end
 
     def settings
@@ -188,7 +189,7 @@ module Bundler
       path = path.parent until path.exist?
       sudo_present = !`which sudo 2>#{NULL}`.empty?
 
-      !File.writable?(path) && sudo_present
+      !settings.path && !File.writable?(path) && sudo_present
     end
 
     def mkdir_p(path)
